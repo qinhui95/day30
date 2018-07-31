@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>IFE DAY28</title>
+        <style>
+            body, ul, li {margin: 0; padding: 0;}
+            body {
+                padding:50px 0 0 200px;
+                
+            }
+            li {list-style: none; }
+            #email-input {
+                width:200px;
+                height:25px;
+                outline:none;
+            }
+            #email-sug-wrapper { 
+                width:200px;
+                border:1px solid grey;
+                font-size: 14px;
+
+            } 
+            #email-sug-wrapper li:hover {
+                color: yellow;
+                cursor: pointer;
+            }
+            #email-sug-wrapper li.active {
+                color: pink;
+            }
+            
+        </style>
+        <script>
+            window.onload = function (){
+                
+                var oInp = document.getElementById('email-input');
+                var oUl = document.getElementById("email-sug-wrapper");
+                var oBtn = document.querySelector('button');
+                var postfixList = ['163.com', 'gmail.com', '126.com', 'qq.com', '263.net'];
+                
+                // 进入页面输入框获取焦点
+                oInp.focus();
+        
+                // html转码
+                // function htmlEncode (html){
+                //     var temp = document.createElement('div');
+                //     temp.innerHTML = html;
+                //     var output = temp.innerHTML;
+                //     temp = null;
+                //     return output;
+                // }
+                // html解码
+                // function htmlDecode(text){
+                //     var temp = document.createElement('div');
+                //     temp.innerHTML = text;
+                //     var output = temp.innerText;
+                //     temp = null;
+                //     return output;
+                // }
+                // 获取用户输入并去除首尾空格
+                function getValue(){
+                    return oInp.value.trim();
+                }
+                //生成提示框中的提示内容
+                function makeLi(){
+                    var liValue = "";
+                    // 将输入框内容转码后赋值给inpValue
+                    var inpValue = getValue();
+                    var inpValueLast = "";
+                    if(inpValue.indexOf('@') >0){
+                        inpValueLast = inpValue.slice(inpValue.indexOf('@')+1, inpValue.length);
+                        inpValue = inpValue.slice(0, inpValue.indexOf('@')).trim();
+                    }
+                    for(let item of postfixList){
+                        /* 如果inpValueLast = ""，值为0，则显示全部。如果inpValueLast不等于空，且不是某个
+                           元素的一部分，比如（inpValueLast=16333333），则值为-1，也显示全部。 */
+                        if(item.indexOf(inpValueLast)>=0 || postfixList.indexOf(inpValueLast) == -1){  
+                            liValue += "<li>" + inpValue + '@' + item + "</li>";
+                        }
+                    }
+                    oUl.innerHTML = liValue;
+                }
+                /*
+                //生成提示框中的提示内容 方法二
+                //这是改变postfixList数组的方法来拼接提示内容
+                function makeLi(){
+                    var postfixList = ['163.com', 'gmail.com', '126.com', 'qq.com', '263.net'];
+                    var inpValue = getValue();
+                    var liValue = '';
+                    if( inpValue.indexOf('@')>0 && inpValue.indexOf('@') < inpValue.length - 1){
+                        var new_postfixList = [];
+                        var new_inpValue = inpValue.slice(inpValue.indexOf('@')+1, inpValue.length);
+                        for( var x of postfixList){
+                            if(x.indexOf(new_inpValue) >= 0){
+                                new_postfixList.push(x);
+                                postfixList = new_postfixList;
+                            }
+                        }
+                    }
+                    if( inpValue.indexOf('@')>0){
+                        inpValue = inpValue.slice(0, inpValue.indexOf('@'));
+                    }
+                    for(let item of postfixList){
+                        liValue += "<li>" + inpValue + '@' + item + "</li>" ;
+                    }
+                    return liValue;
+                }
+                */
+                
+                /*
+                // 将提示内容添加到ul中   感觉这个函数比较多余且和其他函数有耦合，所以合并到makeLi()里了。
+                function appendLi(){
+                    oUl.innerHTML = makeLi();
+                }
+                */
+                // 显示ul提示框
+                function showUl(){
+                    oUl.style.display = 'block';
+                }
+                // 隐藏ul提示框
+                function hideUl(){
+                    oUl.style.display = 'none';
+                }
+                // 控制ul的显示/隐藏状态
+                function showOrhide(){
+                    return getValue() ? showUl(): hideUl();
+                }
+                
+                // 监听提示框鼠标点击 及 输入框上下回车键
+                function valueIntoInp(){
+                    if(oUl.childElementCount){
+                        var aLi = oUl.querySelectorAll('li');
+                        var n = 0;
+                        aLi[n].className = 'active';
+                        // 添加监听上下回车键，做出相应动作
+                        oInp.onkeydown =function(){
+                            var keynum = '';
+                            keynum = window.event? event.keyCode: event.which;
+                            if(oUl.childElementCount > 0){
+                                if(keynum == 40){
+                                    // 当颜色向下移动到最后一个时，返回到第一个
+                                    if(n == aLi.length-1){n = 0;}
+                                    else{n++};
+                                    aLi[n].className = 'active';
+                                }
+                                if(keynum == 38){
+
+                                    // 当颜色向上移动到第一个时，返回到最后一个
+                                    if(n == 0){n = aLi.length-1;}
+                                    else{n--};
+                                    aLi[n].className = 'active';
+                                }
+                                /* 按回车键 将内容放到输入框，隐藏提示框，即使隐藏了提示框，按上下键
+                                和回车还是有动作，只是看不到了（未解决）。所以设置按回车后将焦点移到右侧按钮上。*/
+                                // 以上问题已经解决，在判断keynum之前先判断oUl有没有子元素，回车后将oUl子元素删光。
+                                if(keynum == 13){
+                                    oInp.value = aLi[n].innerHTML;
+                                    oUl.innerHTML = '';
+                                    hideUl();
+                                }
+                                if(keynum == 27){
+                                    oInp.select();
+                                }
+                            }
+                        }
+                        // 点击提示，将内容放到输入框
+                        for(let item of aLi){
+                            item.onclick = function (){
+                                oInp.value = item.innerHTML;
+                                // 隐藏放到window的点击事件里
+                            }
+                        }
+                    }
+                }
+                
+                // 监听输入框的输入
+                oInp.oninput = function(){
+                    makeLi();
+                    showOrhide();
+                    valueIntoInp();
+                }
+                // 点击输入框外的任意空白地方，提示隐藏。
+                window.onclick = function(){
+                    hideUl();
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <div class="wrapper">
+            <input id="email-input" type="text" placeholder="请输入您的邮箱">
+            <button type="submit">提交</button>
+            <ul id="email-sug-wrapper" class="email-sug"></ul>
+        </div>
+    </body>
+</html>
